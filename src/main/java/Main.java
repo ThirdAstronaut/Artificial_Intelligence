@@ -54,7 +54,7 @@ public class Main {
         int generations = 100;
 
         double mutationAge = 0.01;
-        double prob = 0.;
+        double prob = 0.5;
         List<Route> first1000 = new ArrayList<>(Algorithm.generateRandomPopulation(popSize));
     Collections.shuffle(first1000);
 
