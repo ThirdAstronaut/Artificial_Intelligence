@@ -426,11 +426,11 @@ public class Algorithm {
     public static int roulette(List<Route> cities) {
         double sum = 0;
         for (int i = 0; i < cities.size(); i++) {
-            sum += cities.get(i).getDistance();
+            sum += cities.get(i).getStolenItems().getFitness();
         }
         double rand = new Random().nextDouble() * sum;
         for (int i = 0; i < cities.size(); i++) {
-            rand -= cities.get(i).getDistance();
+            rand -= cities.get(i).getStolenItems().getFitness();
             if (rand < 0) return i;
         }
         return cities.size() - 1;

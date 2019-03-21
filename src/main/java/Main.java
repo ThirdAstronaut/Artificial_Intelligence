@@ -54,7 +54,7 @@ public class Main {
         int generations = 100;
 
         double mutationAge = 0.01;
-        double prob = 0.7;
+        double prob = 0.;
         List<Route> first1000 = new ArrayList<>(Algorithm.generateRandomPopulation(popSize));
     Collections.shuffle(first1000);
 
@@ -108,10 +108,10 @@ r.getStolenItems().calcCost(r.getCities());
             /*TEST*/
             // Collections.shuffle(parents);
 
-            for (Route r : parents) {
+   /*         for (Route r : parents) {
                 System.out.println(r.getCities().toString() + "PRZED");
             }
-
+*/
             List<Route> offspring = new ArrayList<>();
             for (int j = 0; j < parents.size(); j += 2) {
                 Route route2 = null;
@@ -123,7 +123,7 @@ r.getStolenItems().calcCost(r.getCities());
                     e.printStackTrace();
                 }
                 double random = ThreadLocalRandom.current().nextDouble(0, 1);
-                System.out.println(random);
+         //       System.out.println(random);
                 if (  random < prob) {
                     try {
                         offspring.add((Route) Algorithm.crossCX(route1.clone(), Objects.requireNonNull(route2).clone()).clone());
@@ -152,10 +152,10 @@ r.getStolenItems().calcCost(r.getCities());
                 r.getStolenItems().calcCost(r.getCities());
 
             }
-            for (Route r : offspring) {
+    /*        for (Route r : offspring) {
                 System.out.println(r.getCities().toString() + "PO");
             }
-
+*/
             //log.error("" + Algorithm.findShortestDistance(offspring));
             /*TEST*/
 
@@ -188,13 +188,16 @@ first1000 = new ArrayList<>(offspring);
 
         stats(first1000);
 
-            System.out.println(new BigDecimal(Algorithm.findBestFitness(first1000)).toPlainString());
+     //       System.out.println(new BigDecimal(Algorithm.findBestFitness(first1000)).toPlainString());
             //saveData(i, Algorithm.findShortestDistance(first1000), Algorithm.findAvgDistance(first1000), Algorithm.findLongestDistance(first1000));
             //saveData(i, Algorithm.findBestFitness(first1000), Algorithm.findAvgFitness(first1000), Algorithm.findWorstFitness(first1000));
             saveData(i, allBest, allAvg, allWorst);
 
         }
         generateCsv();
+        System.out.println(allBest + " : BEST");
+        System.out.println(allAvg + " : AVG");
+        System.out.println(allWorst + " : WORST");
 
 
         //TODO krzyżownia, mutacja, selekcja na najlepszych
@@ -225,7 +228,7 @@ first1000 = new ArrayList<>(offspring);
     }
 */
     private static void saveData(int i, double singelBest, double avgDistance, double longestDistance) {
-        data.add(new String[]{String.valueOf(i), String.valueOf(singelBest), String.valueOf(avgDistance), String.valueOf(longestDistance)});
+        data.add(new String[]{String.valueOf(i).replace(".", ","), String.valueOf(singelBest).replace(".", ","), String.valueOf(avgDistance).replace(".", ","), String.valueOf(longestDistance).replace(".", ",")});
     }
 
 
@@ -300,7 +303,7 @@ public static void testDistances(){
     }
 
     public static void generateCsv() {
-        File file = new File("log.csv");
+        File file = new File("HARD1-PROB-0_6-"+"-log.csv");
 
         try {
             // create FileWriter object with file as parameter
@@ -310,6 +313,10 @@ public static void testDistances(){
             CSVWriter writer = new CSVWriter(outputfile);
 
             // create a List which contains String array
+           /* for(String[] s : data)
+                for(String string : s)
+                    string.replace(".", ",");
+*/
             writer.writeAll(data);
 
             // closing writer connection
