@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Route implements Cloneable, Comparable<Route> {
+public class Route implements Cloneable,  Comparable<Route> {
 
    private List<Integer> cities;
    private double distance;
@@ -18,14 +18,10 @@ public class Route implements Cloneable, Comparable<Route> {
     }
 
     public Route(Route route){
-        this.cities = new ArrayList<>();
-        this.cities.addAll(route.getCities());
+        this.cities = new ArrayList<>(route.getCities());
         this.distance = route.distance;
         this.stolenItems = new StolenItems(route.stolenItems);
-        calcDistance();
     }
-
-
     public List<Integer> getCities() {
         return cities;
     }
@@ -73,9 +69,11 @@ public class Route implements Cloneable, Comparable<Route> {
     @Override
     protected Route clone() throws CloneNotSupportedException {
         Route route = (Route) super.clone();
-        route.cities = this.cities.stream().map(Integer::new).collect(Collectors.toList());
-        route.stolenItems = this.stolenItems.clone();
-        return (Route) super.clone();
+        route.cities = new ArrayList<>(this.cities);
+        route.stolenItems = new StolenItems(this.stolenItems);
+        route.distance = this.distance;
+
+        return (Route) route;
 
     }
 

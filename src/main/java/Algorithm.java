@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 //TODO nowa generacja mutacja, krzyżowanie, wybór
 //TODO fitness = 1/distance, normalize fitness, sum = 100% fitness = fitness/sum
 @Slf4j
 public class Algorithm {
 
-    public static List<Double> calcFitness(List<Route> population) {
+    /*public static List<Double> calcFitness(List<Route> population) {
         double startVal = Double.MAX_VALUE;
         Route route = null;
         List<Double> fitness = new ArrayList<>();
@@ -24,9 +25,9 @@ public class Algorithm {
             fitness.add(1 / (Math.pow(dist, 8) + 1));
         }
         return fitness;
-    }
+    }*/
 
-    public static List<Double> normalizeFitness(List<Double> fitness) {
+    /*public static List<Double> normalizeFitness(List<Double> fitness) {
         List<Double> normalized = new ArrayList<>();
         double sum = 0;
         for (int i = 0; i < fitness.size(); i++) {
@@ -37,7 +38,7 @@ public class Algorithm {
         }
         return normalized;
 
-    }
+    }*/
 
 
     //TODO zapis X najlepszych
@@ -48,40 +49,71 @@ public class Algorithm {
             if (r.getDistance() < min) {
                 min = r.getDistance();
                 //Main.saveData(r.getCities().toArray());
-               // System.out.println(r.getDistance() +"  " +id++);
+                System.out.println(r.getDistance() +"  " +id++);
             }
         }
         return min;
     }
 
-    static List<Route> select(List<Route> passedRoutes, int popSize, int tournament) throws CloneNotSupportedException {
+
+
+
+    public static List<Route> select(List<Route> passedRoutes, int popSize, int tournament)  {
 
         List<Route> parents = new ArrayList<>();
-        List<Route> sample;
+
         for (int i = 0; i < popSize; i++) {
-            sample = new ArrayList<>();
+            int randTournament = -1;
+            List<Route> sample = new ArrayList<>();
             for (int j = 0; j < tournament; j++) {
-                try {
-                    sample.add((Route) passedRoutes.get(new Random().nextInt(popSize)).clone());
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-
-            Route best = (Route) sample.get(0).clone();
-            for (int j = 1; j < tournament; j++) {
-                if (sample.get(j).getStolenItems().getFitness() < best.getStolenItems().getFitness()) {
+                int random = ThreadLocalRandom.current().nextInt(0, popSize);
+                if(random != randTournament) {
                     try {
-                        best = (Route) sample.get(j).clone();
+                    //    System.out.println(random);
+                        sample.add((Route) passedRoutes.get(random).clone());
+                        sample.get(j).getStolenItems().calcCost(sample.get(j).getCities());
+                        randTournament = random;
+
                     } catch (CloneNotSupportedException e) {
                         e.printStackTrace();
                     }
+                } else {
+                    try {
+                        int newRand = (random + new Random().nextInt(popSize)) % popSize;
+                        sample.add((Route) passedRoutes.get(newRand).clone());
+                     //   System.out.println(newRand);
+                        sample.get(j).getStolenItems().calcCost(sample.get(j).getCities());
+                        randTournament = newRand;
+
+                    } catch (CloneNotSupportedException e) {
+                        e.printStackTrace();
+                    }
+                }
+              //  sample.get(j).getStolenItems().calcCost(sample.get(j).getCities());
+           // log.error(sample.get(j).getStolenItems().getFitness() + "");
+            }
+
+
+            Route best = null;
+                best = (Route) sample.get(0);
+
+            for (int j = 1; j < tournament; j++) {
+                if (sample.get(j).getStolenItems().getFitness()
+ > best.getStolenItems().getFitness()) {
+
+                        best = sample.get(j);
+
 //sample.forEach(k -> System.out.println(k.getCities().toString()));
 //log.error("zmieniam");
                 }
+        //        log.error(sample.get(j).getStolenItems().getFitness() + "");
             }
-            parents.add(best);
+
+            try {
+                parents.add((Route) best.clone());
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
         }
         return parents;
 
@@ -95,7 +127,7 @@ public class Algorithm {
         for (Route r : routes) {
             if (r.getDistance() > max) {
                 max = r.getDistance();
-            //    System.out.println(r.getDistance() +"  LONGEST" +id++);
+                System.out.println(r.getDistance() +"  LONGEST" +id++);
 
                 //Main.saveData(r.getCities().toArray());
             }
@@ -103,12 +135,22 @@ public class Algorithm {
         return max;
     }
 
+    public static double findMostPreciousKnapsack(List<Route> routes) {
+        double max = Double.MIN_VALUE;
+        for (Route r : routes) {
+            if (r.getStolenItems().calcKnapsackValue() > max) {
+                max = r.getStolenItems().calcKnapsackValue();
+                //Main.saveData(r.getCities().toArray());
+            }
+        }
+        return max;
+    }
 
     public static double findWorstFitness(List<Route> routes) {
-        double max = Double.MIN_VALUE;
+        double max = Double.MAX_VALUE;
         int id = 0;
         for (Route r : routes) {
-            if (r.getStolenItems().getFitness() > max) {
+            if (r.getStolenItems().getFitness() < max) {
                 max = r.getStolenItems().getFitness();
                 //    System.out.println(r.getDistance() +"  LONGEST" +id++);
 
@@ -140,21 +182,6 @@ public class Algorithm {
         return max;
     }
 
-
-
-
-    public static double findMostPreciousKnapsack(List<Route> routes) {
-        double max = Double.MIN_VALUE;
-        for (Route r : routes) {
-            if (r.getStolenItems().calcKnapsackValue() > max) {
-                max = r.getStolenItems().calcKnapsackValue();
-                //Main.saveData(r.getCities().toArray());
-            }
-        }
-        return max;
-    }
-
-
     public static double findAvgDistance(List<Route> routes) {
         double sum = 0;
         for (Route r : routes) {
@@ -178,12 +205,12 @@ public class Algorithm {
 
 
     public static void mutateRoute(Route route, int dimension) {
+      //  Route route1 = new Route(route);
         int a = new Random().nextInt(dimension);
         int b = new Random().nextInt(dimension);
         swap(route, a, b);
-        stealItems(route);
-        route.calcDistance();
-    }
+        route.getStolenItems().calcCost(route.getCities());
+        }
 
 /*
     public static void mutateRoutes(List<Route> routes, int dimension) {
@@ -231,7 +258,7 @@ public class Algorithm {
                 route.getCities().add(i, route1.getCities().get(i));
         }
         route.calcDistance();
-        stealItems(route);
+       // stealItems(route);
         return route;
     }
 
@@ -258,8 +285,12 @@ public class Algorithm {
     public static List<Route> generateRandomPopulation(int size) {
         List<Route> routes = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            routes.add(generateRandomRoute());
-        //    log.error(routes.get(i).getCities().toString()+"");
+            try {
+                routes.add(generateRandomRoute().clone());
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+            //    log.error(routes.get(i).getCities().toString()+"");
         }
         return routes;
     }
@@ -281,15 +312,19 @@ public class Algorithm {
         for (int i = 1; i < Main.getCities().size() + 1; i++)
             route.getCities().set(i - 1, i);
         Collections.shuffle(route.getCities());
-        route.calcDistance();
+ //       route.calcDistance();
         stealItems(route);
+  //      route.getStolenItems().calcCost(route.getCities());
+     //   route.getStolenItems().calcFitness();
         return route;
     }
 
     public static void stealItems(Route route) {
 
         for (int i = 0; i < route.getCities().size(); i++) {
-            route.getStolenItems().stealItemFromCity(route.getCities().get(i), route.getCities().get( (i + 1) % route.getCities().size()));
+
+      //      route.getStolenItems().stealItemFromCity(route.getCities().get(i), route.getCities().get( (i + 1) /*% route.getCities().size()*/));
+        route.getStolenItems().calcCost(route.getCities());
         }
     }
 
@@ -299,7 +334,29 @@ public class Algorithm {
 
     }
 
-    public Route crossCX(Route route1, Route route2) {
+    /*private void pmx(Individual first, Individual second) {
+        Node[] parent1 = first.route;
+        Node[] parent2 = second.route;
+
+        int startIndex = 3;
+
+        Node[] crossedFirstParent = new Node[parent1.length];
+        System.arraycopy(parent1, 0, crossedFirstParent, 0, parent1.length);
+        Node[] crossedSecondParent = new Node[parent2.length];
+        System.arraycopy(parent2, 0, crossedSecondParent, 0, parent2.length);
+
+        for(int i = 0; i < 4; i++){
+            swap(parent2, crossedFirstParent, startIndex + i);
+            swap(parent1, crossedSecondParent, startIndex + i);
+        }
+
+        first.route = crossedFirstParent;
+        second.route = crossedSecondParent;
+    }
+*/
+
+
+    public static Route crossCX(Route route1, Route route2) {
         Route route = new Route();
         int index = 0;
         while (!element_already_inOffspring(route.getCities(), route2.getCities().get(index))) {
@@ -314,9 +371,12 @@ public class Algorithm {
                 route.getCities().set(offspring_index, route2.getCities().get(offspring_index));
             }
         }
-        route.calcDistance();
-        stealItems(route);
-        // log.error("corssCX route: "+ route.getDistance());
+        //route.calcDistance();
+        route.getStolenItems().calcCost(route.getCities());
+        //route.getStolenItems().calcFitness();
+      //  route.getStolenItems().calcCost(route.getCities());
+
+      //   log.error("corssCX route fitness: "+ route.getStolenItems().getFitness());
         return route;
     }
 
@@ -340,7 +400,7 @@ public class Algorithm {
         return false;
     }
 
-    public List<Route> crossover(List<Route> routes, double probability) {
+    public static List<Route> crossover(List<Route> routes, double probability) {
         List<Route> offspring = new ArrayList<>();
         for (int i = 0; i < routes.size(); i += 2) {
             Route route1 = routes.get(i);
