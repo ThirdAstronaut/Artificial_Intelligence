@@ -1,15 +1,13 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class Route implements Cloneable,  Comparable<Route> {
+public class Route implements Cloneable, Comparable<Route> {
 
-   private List<Integer> cities;
-   private double distance;
-   private StolenItems stolenItems;
-  // private double time;
+    private List<Integer> cities;
+    private double distance;
+    private StolenItems stolenItems;
 
-    public Route() {
+    Route() {
         cities = new ArrayList<>();
         for (int i = 0; i < Main.getDimension(); i++) {
             cities.add(-1);
@@ -17,11 +15,12 @@ public class Route implements Cloneable,  Comparable<Route> {
         stolenItems = new StolenItems();
     }
 
-    public Route(Route route){
+    public Route(Route route) {
         this.cities = new ArrayList<>(route.getCities());
         this.distance = route.distance;
         this.stolenItems = new StolenItems(route.stolenItems);
     }
+
     public List<Integer> getCities() {
         return cities;
     }
@@ -38,10 +37,10 @@ public class Route implements Cloneable,  Comparable<Route> {
         this.distance = distance;
     }
 
-    public void calcDistance(){
+    public void calcDistance() {
         int i = cities.get(0);
 //        cities.forEach(System.out::print);
-         for (int j = 1; j < cities.size(); j++) {
+        for (int j = 1; j < cities.size(); j++) {
             distance += Algorithm.getDistanceBetweenTwoCities(i, cities.get(j));
             i = cities.get(j);
         }
@@ -49,16 +48,7 @@ public class Route implements Cloneable,  Comparable<Route> {
     }
 
 
-/*
-    public double getTime() {
-        return time;
-    }
-
-    public void setTime(double time) {
-        this.time = time;
-    }*/
-
-    public StolenItems getStolenItems() {
+    StolenItems getStolenItems() {
         return stolenItems;
     }
 
@@ -73,10 +63,9 @@ public class Route implements Cloneable,  Comparable<Route> {
         route.stolenItems = new StolenItems(this.stolenItems);
         route.distance = this.distance;
 
-        return (Route) route;
+        return route;
 
     }
-
 
 
     @Override

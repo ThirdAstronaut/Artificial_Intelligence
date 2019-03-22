@@ -1,6 +1,9 @@
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 
 @Slf4j
 public class ItemsInCity {
@@ -11,28 +14,19 @@ public class ItemsInCity {
         return itemsMap;
     }
 
-    public static void fillItems(List<Item> allItems, List<Node> cities) {
+    static void fillItems(List<Item> allItems, List<Node> cities) {
         HashMap<Integer, List<Item>> tmp = new HashMap<>();   //cityNum, item id, item ratio
         for (Node n : cities) {
-
-            // log.error(""+n.getId());
-
-            tmp.put(n.getId(), new ArrayList<Item>());
-
+            tmp.put(n.getId(), new ArrayList<>());
             for (Item item : allItems) {
-
                 if (item.getCityNum() == n.getId())
-
                     tmp.get(n.getId()).add(item);
             }
             for (Item i : tmp.get(n.getId())) {
-
                 allItems.remove(i);
             }
-            Collections.sort(tmp.get(n.getId()), Comparator.comparing(Item::getRatio));
+            tmp.get(n.getId()).sort(Comparator.comparing(Item::getRatio));
         }
         itemsMap = tmp;
     }
-
-
 }

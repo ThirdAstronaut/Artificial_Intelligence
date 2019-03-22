@@ -3,7 +3,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @ToString
 @Slf4j
-public class Node  {
+public class Node {
 
     private int id;
     private double xPosition;

@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class StolenItems  implements Cloneable{
+public class StolenItems implements Cloneable {
 
     private double fitness;
     private int profit;
@@ -35,10 +35,10 @@ public class StolenItems  implements Cloneable{
         clone.fitness = this.fitness;
         clone.time = this.time;
         clone.profit = this.profit;
-    return clone;
+        return clone;
     }
 
-    public StolenItems(StolenItems stolenItems){
+    public StolenItems(StolenItems stolenItems) {
         this.maxKnapsackWeight = stolenItems.maxKnapsackWeight;
         this.minVelocity = stolenItems.minVelocity;
         this.maxVelocity = stolenItems.maxVelocity;
@@ -82,28 +82,8 @@ public class StolenItems  implements Cloneable{
         return items.stream().mapToDouble(Item::getWeight).sum();
     }
 
-   /* public void stealItemFromCity(Integer cityId, Integer nextCity) {
-        boolean added = false;
-         //for (Item i : ItemsInCity.getItems().get(cityId)) {   //wszystkie przedmioty w odwiedzonym miescie posortowane wg ratio
-        for (int i = 0; i <  ItemsInCity.getItems().get(cityId).size(); i++) {
-            double  weight = ItemsInCity.getItems().get(cityId).get(i).getWeight();
-            Item it = ItemsInCity.getItems().get(cityId).get(i);
-            if(!added &&   weight + currentKnapsackWeight <= maxKnapsackWeight) {
-                items.add(it);
-                profit += it.getProfit();
-                currentKnapsackWeight += weight;
-                currentVelocity = calcVelocity();
-                added = true;
-                if(currentVelocity < minVelocity)
-                    currentVelocity = minVelocity;
-  //              calcFitness();
-            }
-            time += (Algorithm.getDistanceBetweenTwoCities(cityId, nextCity) / currentVelocity);
-        }
 
-    }
-*/
-    public void calcCost(List<Integer> cities){
+    void calcCost(List<Integer> cities) {
         items = new ArrayList<>();
         currentKnapsackWeight = 0;
         currentVelocity = Main.getMaxSpeed();
@@ -130,15 +110,10 @@ public class StolenItems  implements Cloneable{
                 }
             }
 
-            distance = Algorithm.getDistanceBetweenTwoCities(cities.get(i), cities.get((i + 1) % cities.size() ));
+            distance = Algorithm.getDistanceBetweenTwoCities(cities.get(i), cities.get((i + 1) % cities.size()));
             currentVelocity = maxVelocity - currentKnapsackWeight * ((maxVelocity - minVelocity) / maxKnapsackWeight);
-                time += distance / currentVelocity;
+            time += distance / currentVelocity;
         }
-       /* distance = Algorithm.getDistanceBetweenTwoCities(cities.get(cities.size()-1), cities.get(0));
-        currentVelocity = maxVelocity - currentKnapsackWeight * ((maxVelocity - minVelocity) / maxKnapsackWeight);
-        time += distance / currentVelocity;
-*/
-        //calcFitness();
         fitness = profit - time;
 
     }
@@ -168,7 +143,7 @@ public class StolenItems  implements Cloneable{
         this.items = items;
     }
 
-    public double calcFitness(){
+    public double calcFitness() {
         fitness = profit - time;
         return fitness;
     }
@@ -189,17 +164,7 @@ public class StolenItems  implements Cloneable{
         return items;
     }
 
-    public double calcKnapsackValue(){
+    public double calcKnapsackValue() {
         return items.stream().mapToDouble(Item::getProfit).sum();
     }
 }
-/* for (int i = 0; i < ItemsInCity.getItems().get(node.getId()).size(); i++) {
-            if(!added)
-            if (ItemsInCity.getItems().get(node.getId()).get(i).getWeight() + currentKnapsackWeight <= maxKnapsackWeight) {
-
-                items.add((Item) ItemsInCity.getItems().get(node.getId()));
-
-
-            }
-
-       */

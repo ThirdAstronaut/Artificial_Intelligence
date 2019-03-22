@@ -1,10 +1,11 @@
 import com.opencsv.CSVWriter;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
@@ -21,78 +22,51 @@ public class Main {
     private static String edgeWeightType;
     private static List<Node> cities = new ArrayList<>();
     private static List<Item> items = new ArrayList<>();
-    private static List<Item> connections = new ArrayList<>();
-    private static int numOfConnections = dimension * (dimension - 1) / 2;
-    static List<String[]> data = new ArrayList<String[]>();
-    private static int counter = 0;
-    //  private static List<Route> first1000;
-    static double allBest;
-    static double allWorst;
-    static double allAvg;
+    static List<String[]> data = new ArrayList<>();
+    private static double allBest;
+    private static double allWorst;
+    private static double allAvg;
 
-    private static final String FILE_NAME = "HARD_1-100-10-100-05-07";
-
+    private static final String FILE_NAME = "HARD_1-100-10-100-001-07-ROULETTE";
 
 
     public static void main(String... args) {
         readData("src\\main\\resources\\hard_1.ttp");
         Distance.fillDistances(cities);
         ItemsInCity.fillItems(items, cities);
-        /*
-        for(Integer i : Distance.getDistances().keySet()){
-            System.out.println(Distance.getDistances().get(i).keySet());
-        }
-
-        for(Integer i : Distance.getDistances().keySet()){
-            System.out.println(Distance.getDistances().get(i).values());
-        }*/
 
 //TODO KOMENT DLA PYTHONA
 //saveData( "Id", "Best", "Avg", "Worst");
 
+
         int popSize = 100;
         int tournament = 10;
         int generations = 100;
-        double mutationAge = 0.5;
-        double prob = 0.7;
+        double mutation = 0.05;
+        double px = 0.7;
         List<Route> first1000 = new ArrayList<>(Algorithm.generateRandomPopulation(popSize));
-    Collections.shuffle(first1000);
 
-
+        /** EVALUATE */
         for (Route r : first1000) {
-r.getStolenItems().calcCost(r.getCities());
+            r.getStolenItems().calcCost(r.getCities());
 
         }
 
-        /*for(Route r : first1000){
-            System.out.println(r.getCities().toString() + " FIRST 1000");
-        }*/
-        //  List<Route> first1000 = new ArrayList<>();
-        //first1000 = ();
-
-
-
-     //   evaluate(first1000);
-
-
-        //Route singelBest = Algorithm.findShortestDistanceRoute(first1000);
-        //Route randomBest = Algorithm.findShortestDistanceRoute(first1000);
-        // System.out.println(singelBest.getDistance() + "singleBest bez niczego");
         for (int i = 0; i < generations; i++) {
 
-       /*     for (Route route1 : first1000)
-                route1.getStolenItems().calcCost(route1.getCities());
+            /** SELECTION */
+           // List<Route> tmp = Algorithm.select(first1000, popSize, tournament);
+            List<Route> tmp = new ArrayList<>();
+            for (int j = 0; j < first1000.size(); j++) {
+                tmp.add(first1000.get(Algorithm.roulette(first1000)));
+            }
+            List<Route> parents = new ArrayList<>(tmp);
 
-       */
-
-       List<Route> tmp = Algorithm.select(first1000, popSize, tournament);
-       List<Route> parents = new ArrayList<>(tmp);
-
-            for (Route r : parents) {
+          /*  for (Route r : parents) {
                 r.getStolenItems().calcCost(r.getCities());
 
             }
-
+*/
 
             /* TEST ROULETTE */
            /* List<Route> parents = new ArrayList<>();
@@ -112,85 +86,51 @@ r.getStolenItems().calcCost(r.getCities());
                 System.out.println(r.getCities().toString() + "PRZED");
             }
 */
+
+   /** CROSSOVER */
             List<Route> offspring = new ArrayList<>();
             for (int j = 0; j < parents.size(); j += 2) {
                 Route route2 = null;
                 Route route1 = null;
                 try {
-                    route1 = (Route) parents.get(j).clone();
-                    route2 = (Route) parents.get(j + 1).clone();
+                    route1 = parents.get(j).clone();
+                    route2 = parents.get(j + 1).clone();
                 } catch (CloneNotSupportedException e) {
                     e.printStackTrace();
                 }
                 double random = ThreadLocalRandom.current().nextDouble(0, 1);
-         //       System.out.println(random);
-                if (  random < prob) {
+
+                if (random < px) {
                     try {
-                        offspring.add((Route) Algorithm.crossCX(route1.clone(), Objects.requireNonNull(route2).clone()).clone());
-                        offspring.add((Route) (Algorithm.crossCX(route2.clone(), route1.clone())).clone());
+                        offspring.add(Algorithm.crossCX(route1.clone(), Objects.requireNonNull(route2).clone()).clone());
+                        offspring.add((Algorithm.crossCX(route2.clone(), route1.clone())).clone());
                     } catch (CloneNotSupportedException e) {
                         e.printStackTrace();
                     }
-                    //                            log.error(++counter+" "+offspring.get(j).getCities().toString() + " off0");
-                    //                          log.error(++counter+" "+offspring.get(j+1).getCities().toString() + " off1");
                 } else {
                     try {
-                        offspring.add((Route) parents.get(j).clone());
-                        offspring.add((Route) parents.get(j + 1).clone());
+                        offspring.add(parents.get(j).clone());
+                        offspring.add(parents.get(j + 1).clone());
                     } catch (CloneNotSupportedException e) {
                         e.printStackTrace();
                     }
 
 
-                    //         log.error(offspring.get(i+1).getCities().toString() + " off1");
+                }
+            }
+
+            /** MUTATION */
+           for (Route anOffspring : offspring) {
+                if (new Random().nextDouble() < mutation) {
+                    Algorithm.mutateRoute(anOffspring, dimension);
 
                 }
             }
 
+            first1000 = new ArrayList<>(offspring);
 
-            for (Route r : offspring) {
-                r.getStolenItems().calcCost(r.getCities());
+            stats(first1000);
 
-            }
-    /*        for (Route r : offspring) {
-                System.out.println(r.getCities().toString() + "PO");
-            }
-*/
-            //log.error("" + Algorithm.findShortestDistance(offspring));
-            /*TEST*/
-
-
-            for (int j = 0; j < offspring.size(); j++) {
-                if (new Random().nextDouble() < mutationAge) {
-                    Algorithm.mutateRoute(offspring.get(j), dimension);
-                    //log.error("mutation" );
-
-                    //calcPopulationDistances(first1000);
-                }
-            }
-
-
-            for (Route r : offspring) {
-                r.getStolenItems().calcCost(r.getCities());
-
-            }
-first1000 = new ArrayList<>(offspring);
-/*for (Route r : first1000){
-    r.getStolenItems().calcCost(r.getCities());
-}*/
-
-
-
-            for (Route r : first1000) {
-                r.getStolenItems().calcCost(r.getCities());
-
-            }
-
-        stats(first1000);
-
-     //       System.out.println(new BigDecimal(Algorithm.findBestFitness(first1000)).toPlainString());
-            //saveData(i, Algorithm.findShortestDistance(first1000), Algorithm.findAvgDistance(first1000), Algorithm.findLongestDistance(first1000));
-            //saveData(i, Algorithm.findBestFitness(first1000), Algorithm.findAvgFitness(first1000), Algorithm.findWorstFitness(first1000));
             saveData(i, allBest, allAvg, allWorst);
 
         }
@@ -205,7 +145,7 @@ first1000 = new ArrayList<>(offspring);
     }
 
     private static void saveData(String i, String best, String avg, String worst) {
-    data.add(new String[]{i, best, avg,worst});
+        data.add(new String[]{i, best, avg, worst});
     }
 
     private static void stats(List<Route> routes) {
@@ -225,26 +165,11 @@ first1000 = new ArrayList<>(offspring);
         allAvg = avarage / routes.size();
     }
 
-   /* private static void evaluate(List<Route> first1000) {
-        for (Route r : first1000) {
-            r.getStolenItems().calcFitness();
-        }
-    }
-*/
     private static void saveData(int i, double singelBest, double avgDistance, double longestDistance) {
         //TODO KOMENT DLA PYTHONA
-       // data.add(new String[]{String.valueOf(i).replace(".", ","), String.valueOf(singelBest).replace(".", ","), String.valueOf(avgDistance).replace(".", ","), String.valueOf(longestDistance).replace(".", ",")});
+        // data.add(new String[]{String.valueOf(i).replace(".", ","), String.valueOf(singelBest).replace(".", ","), String.valueOf(avgDistance).replace(".", ","), String.valueOf(longestDistance).replace(".", ",")});
         data.add(new String[]{String.valueOf(i), String.valueOf(singelBest), String.valueOf(avgDistance), String.valueOf(longestDistance)});
     }
-
-
-   /*
-public static void testDistances(){
-        System.out.println(Distance.getDistances().size() + "size");
-        System.out.println(Distance.getDistances().get(1).keySet().size() + "size");
-        System.out.println(Distance.getDistances().get(1).values().size() + "size");
-
-}*/
 
     private static void readData(String fileName) {
         String[] params = new String[9];
@@ -257,22 +182,16 @@ public static void testDistances(){
                 params[counter++] = tmp[tmp.length - 1].trim();
             }
             int dims = Integer.valueOf(params[2]);
-            while ((str = in.readLine()) != null && dims > 0) { /*&& Files.lines(Paths.get(fileName)).count() > 10 && Files.lines(Paths.get(fileName)).count() < 10 + dimension*/
-                String[] tmp = str.split(":");
+            while ((str = in.readLine()) != null && dims > 0) {
                 cities.add(new Node(str.split("\t")));
                 dims--;
             }
-            // in.readLine();
-            //cities.forEach(System.out::println);
-
             int itemsNum = Integer.valueOf(params[3]);
-            while ((str = in.readLine()) != null && itemsNum > 0) { /*&& Files.lines(Paths.get(fileName)).count() > 10 && Files.lines(Paths.get(fileName)).count() < 10 + dimension*/
-                String[] tmp = str.split(":");
+            while ((str = in.readLine()) != null && itemsNum > 0) {
                 items.add(new Item(str.split("\t")));
                 itemsNum--;
             }
 
-            //items.forEach(System.out::println);
 
             in.close();
         } catch (IOException e) {
@@ -293,92 +212,47 @@ public static void testDistances(){
         edgeWeightType = params[8];
     }
 
-    public static List<Node> getCities() {
+    static List<Node> getCities() {
         return cities;
     }
 
-    public static void saveData(Object[] text) {
-        try (PrintStream out = new PrintStream(new FileOutputStream("results.txt"))) {
-            out.println(problemName);
-            for (int i = 0; i < text.length; i++) {
-                out.print(text[i] + " ");
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 
-    public static void generateCsv() {
-        File file = new File(FILE_NAME+"-p.csv");
+    private static void generateCsv() {
+        File file = new File(FILE_NAME + "-p.csv");
 
         try {
-            // create FileWriter object with file as parameter
             FileWriter outputfile = new FileWriter(file);
 
-            // create CSVWriter object filewriter object as parameter
             CSVWriter writer = new CSVWriter(outputfile);
 
-            // create a List which contains String array
-           /* for(String[] s : data)
-                for(String string : s)
-                    string.replace(".", ",");
-*/
             writer.writeAll(data);
 
-            // closing writer connection
             writer.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
+
             e.printStackTrace();
         }
 
-    }
-
-    public static String getProblemName() {
-        return problemName;
-    }
-
-    public static String getKnapsackDataType() {
-        return knapsackDataType;
     }
 
     public static int getDimension() {
         return dimension;
     }
 
-    public static int getNumOfItems() {
-        return numOfItems;
-    }
-
-    public static double getCapacityOfKnapsack() {
+    static double getCapacityOfKnapsack() {
         return capacityOfKnapsack;
     }
 
-    public static double getMinSpeed() {
+    static double getMinSpeed() {
         return minSpeed;
     }
 
-    public static double getMaxSpeed() {
+    static double getMaxSpeed() {
         return maxSpeed;
-    }
-
-    public static double getRentingRatio() {
-        return rentingRatio;
-    }
-
-    public static String getEdgeWeightType() {
-        return edgeWeightType;
     }
 
     public static List<Item> getItems() {
         return items;
     }
 
-    public static List<Item> getConnections() {
-        return connections;
-    }
-
-    public static int getNumOfConnections() {
-        return numOfConnections;
-    }
 }

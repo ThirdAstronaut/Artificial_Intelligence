@@ -37,7 +37,9 @@ public class Item implements Comparable {
         return profit;
     }
 
-    public void setProfit(int profit) { this.profit = profit; }
+    public void setProfit(int profit) {
+        this.profit = profit;
+    }
 
     public int getWeight() {
         return weight;
@@ -61,6 +63,6 @@ public class Item implements Comparable {
 
     @Override
     public int compareTo(Object o) {
-        return (int) (this.getRatio() - ((Item)o).getRatio());
+        return (int) (this.getRatio() - ((Item) o).getRatio());
     }
 }
