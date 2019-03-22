@@ -25,11 +25,12 @@ public class Main {
     private static int numOfConnections = dimension * (dimension - 1) / 2;
     static List<String[]> data = new ArrayList<String[]>();
     private static int counter = 0;
-  //  private static List<Route> first1000;
+    //  private static List<Route> first1000;
     static double allBest;
     static double allWorst;
     static double allAvg;
 
+    private static final String FILE_NAME = "HARD_1-100-10-100-05-07";
 
 
 
@@ -46,15 +47,14 @@ public class Main {
             System.out.println(Distance.getDistances().get(i).values());
         }*/
 
-
-
+//TODO KOMENT DLA PYTHONA
+//saveData( "Id", "Best", "Avg", "Worst");
 
         int popSize = 100;
-        int tournament = 5;
+        int tournament = 10;
         int generations = 100;
-
-        double mutationAge = 0.01;
-        double prob = 0.5;
+        double mutationAge = 0.5;
+        double prob = 0.7;
         List<Route> first1000 = new ArrayList<>(Algorithm.generateRandomPopulation(popSize));
     Collections.shuffle(first1000);
 
@@ -204,6 +204,10 @@ first1000 = new ArrayList<>(offspring);
 
     }
 
+    private static void saveData(String i, String best, String avg, String worst) {
+    data.add(new String[]{i, best, avg,worst});
+    }
+
     private static void stats(List<Route> routes) {
         int bestId = 0;
         int worstId = 0;
@@ -228,7 +232,9 @@ first1000 = new ArrayList<>(offspring);
     }
 */
     private static void saveData(int i, double singelBest, double avgDistance, double longestDistance) {
-        data.add(new String[]{String.valueOf(i).replace(".", ","), String.valueOf(singelBest).replace(".", ","), String.valueOf(avgDistance).replace(".", ","), String.valueOf(longestDistance).replace(".", ",")});
+        //TODO KOMENT DLA PYTHONA
+       // data.add(new String[]{String.valueOf(i).replace(".", ","), String.valueOf(singelBest).replace(".", ","), String.valueOf(avgDistance).replace(".", ","), String.valueOf(longestDistance).replace(".", ",")});
+        data.add(new String[]{String.valueOf(i), String.valueOf(singelBest), String.valueOf(avgDistance), String.valueOf(longestDistance)});
     }
 
 
@@ -303,7 +309,7 @@ public static void testDistances(){
     }
 
     public static void generateCsv() {
-        File file = new File("HARD1-PROB-0_6-"+"-log.csv");
+        File file = new File(FILE_NAME+"-p.csv");
 
         try {
             // create FileWriter object with file as parameter
